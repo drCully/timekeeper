@@ -1,9 +1,10 @@
-require('dotenv').config()
+const dotenv = require('dotenv').config()
 const express = require('express')
 const app = express()
 const path = require('path')
 const verifyJWT = require('./middleware/verifyJWT')
 const cookieParser = require('cookie-parser')
+//const { errorHandler } = require('./middleware/errorMiddleware')
 const mongoose = require('mongoose')
 const connectDB = require('./config/dbConn')
 const PORT = process.env.PORT || 5000
@@ -19,7 +20,6 @@ app.use('/register', require('./routes/registerRoutes'))
 app.use('/auth', require('./routes/authRoutes'))
 app.use('/refresh', require('./routes/refreshRoutes'))
 app.use('/signout', require('./routes/signoutRoutes'))
-
 app.use(verifyJWT)
 app.use('/clients', require('./routes/api/clientRoutes'))
 app.use('/invoices', require('./routes/api/invoiceRoutes'))
@@ -28,18 +28,22 @@ app.use('/tasks', require('./routes/api/taskRoutes'))
 app.use('/timeslips', require('./routes/api/timeslipRoutes'))
 app.use('/users', require('./routes/api/userRoutes'))
 
-// Serve frontend
+// Serve frontend in production site
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, './frontend/build')))
+  app.use(express.static(path.join(__dirname, '../frontend/build')))
+  const buildDir = path.join(__dirname, '../frontend/build')
+  console.log(buildDir)
 
   app.get('*', (req, res) =>
     res.sendFile(
-      path.resolve(__dirname, './', 'frontend', 'build', 'index.html')
+      path.resolve(__dirname, '../', 'frontend', 'build', 'index.html')
     )
   )
 } else {
   app.get('/', (req, res) => res.send('Please set to production'))
 }
+
+//app.use(errorHandler)
 
 mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB')
